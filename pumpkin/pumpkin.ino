@@ -33,6 +33,7 @@ unsigned long motionLastDetectedTime;
 // 0 - No motion
 int state;
 bool policePhase = false;
+bool lastMotionState = false;
 
 void setup() {
   Serial.begin(9600);
@@ -46,9 +47,9 @@ void setup() {
 void loop() {
   if (state == 0) {
     loopCandle();
-    int motionState = digitalRead(MOTION_PIN);
-    Serial.println(motionState);
-    if (motionState == HIGH) {
+    bool currentMotion = digitalRead(MOTION_PIN) == HIGH;
+    Serial.println(currentMotion);
+    if (currentMotion && !lastMotionState) {
       motionLastDetectedTime = millis();
       Serial.println("Motion detected");
       int track = random(TRACK_COUNT);
@@ -57,6 +58,7 @@ void loop() {
       mp3.playFileByIndexNumber(track + 1);
       state = track + 1;
     }
+    lastMotionState = currentMotion;
   } else if (state == 1) {
     loopDisco();
   } else if (state == 2) {
@@ -65,6 +67,7 @@ void loop() {
 
   if (state != 0) {
     if (millis() - motionLastDetectedTime >= motionDelayTime) {
+      lastMotionState = digitalRead(MOTION_PIN) == HIGH;
       resetLEDs();
       state = 0;
     }
