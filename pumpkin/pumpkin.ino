@@ -11,6 +11,8 @@ CRGB leds[NUM_LEDS];
 // Audio
 SoftwareSerial mySoftwareSerial(2, 3);
 JQ6500_Serial mp3(mySoftwareSerial);
+const unsigned long TRACK_DURATIONS[] = {15000, 10000};
+const int TRACK_COUNT = 2;
 
 // Candle
 const uint8_t CANDLE_HUE = 20;
@@ -23,7 +25,7 @@ uint8_t candleTarget[CANDLE_LEDS];
 
 // Motion
 const int MOTION_PIN = 5;
-const unsigned long MOTION_DELAY_TIME = 20000;
+unsigned long motionDelayTime;
 unsigned long motionLastDetectedTime;
 
 // States
@@ -42,22 +44,29 @@ void setup() {
 }
 
 void loop() {
-  if (state == 1) {
-    loopPolice();
-    if (millis() - motionLastDetectedTime >= MOTION_DELAY_TIME) {
-      resetLEDs();
-      state = 0;
-    }
-  } else {
+  if (state == 0) {
     loopCandle();
     int motionState = digitalRead(MOTION_PIN);
     Serial.println(motionState);
     if (motionState == HIGH) {
       motionLastDetectedTime = millis();
-      onMotionDetected();
+      Serial.println("Motion detected");
+      int track = random(TRACK_COUNT);
+      motionDelayTime = TRACK_DURATIONS[track];
       clearLEDs();
-      mp3.playFileByIndexNumber(1);
-      state = 1;
+      mp3.playFileByIndexNumber(track + 1);
+      state = track + 1;
+    }
+  } else if (state == 1) {
+    loopDisco();
+  } else if (state == 2) {
+    loopPolice();
+  }
+
+  if (state != 0) {
+    if (millis() - motionLastDetectedTime >= motionDelayTime) {
+      resetLEDs();
+      state = 0;
     }
   }
 }
@@ -100,6 +109,13 @@ void loopPolice() {
   delay(150);
 }
 
+void loopDisco() {
+  leds[0] = CHSV(random8(), 255, 255);
+  leds[1] = CHSV(random8(), 255, 255);
+  FastLED.show();
+  delay(random8(30, 80));
+}
+
 void loopCandle() {
   for (int i = 0; i < CANDLE_LEDS; i++) {
     if (random8() < 80) {
@@ -137,16 +153,7 @@ void setupAudio() {
   delay(500);
 }
 
-void loopAudio() {
-    // Wait 10 seconds before sending the command again
-  delay(20000);
-}
-
 void setupMotion() {
   pinMode(MOTION_PIN, INPUT);
   motionLastDetectedTime = millis();
-}
-
-void onMotionDetected() {
-  Serial.println("Motion detected");
 }
