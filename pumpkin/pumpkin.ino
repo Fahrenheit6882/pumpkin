@@ -30,6 +30,7 @@ unsigned long motionLastDetectedTime;
 // 1 - Motion detected
 // 0 - No motion
 int state;
+bool policePhase = false;
 
 void setup() {
   Serial.begin(9600);
@@ -42,13 +43,8 @@ void setup() {
 
 void loop() {
   if (state == 1) {
-    setPixelColor(0, CRGB::Red);
-    FastLED.show();
-    delay(500);
-    clearLEDs();
-    delay(500);
+    loopPolice();
     if (millis() - motionLastDetectedTime >= MOTION_DELAY_TIME) {
-      // reset back to default state
       resetLEDs();
       state = 0;
     }
@@ -89,6 +85,19 @@ void resetLEDs() {
     candleBrightness[i] = random8(CANDLE_BRIGHTNESS_MIN, CANDLE_BRIGHTNESS_MAX);
     candleTarget[i] = candleBrightness[i];
   }
+}
+
+void loopPolice() {
+  if (policePhase) {
+    leds[0] = CRGB::Red;
+    leds[1] = CRGB::Blue;
+  } else {
+    leds[0] = CRGB::Blue;
+    leds[1] = CRGB::Red;
+  }
+  policePhase = !policePhase;
+  FastLED.show();
+  delay(150);
 }
 
 void loopCandle() {
