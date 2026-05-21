@@ -116,16 +116,14 @@ void resetLEDs() {
 }
 
 void loopPolice() {
-  if (policePhase) {
-    leds[0] = CRGB::Red;
-    leds[1] = CRGB::Blue;
-  } else {
-    leds[0] = CRGB::Blue;
-    leds[1] = CRGB::Red;
-  }
+  CRGB color = policePhase ? CRGB::Red : CRGB::Blue;
+  leds[0] = color;
+  leds[1] = color;
   policePhase = !policePhase;
   FastLED.show();
   delay(150);
+  clearLEDs();
+  delay(50);
 }
 
 void loopMachineGun() {
