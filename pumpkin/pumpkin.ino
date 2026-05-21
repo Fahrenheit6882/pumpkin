@@ -11,8 +11,9 @@ CRGB leds[NUM_LEDS];
 // Audio
 SoftwareSerial mySoftwareSerial(2, 3);
 JQ6500_Serial mp3(mySoftwareSerial);
-const unsigned long TRACK_DURATIONS[] = {15000, 10000};
-const int TRACK_COUNT = 2;
+const unsigned long TRACK_DURATIONS[] = {15000, 10000, 30000, 20000, 8000, 24000, 13000};
+const int TRACK_COUNT = 7;
+const bool SEQUENTIAL_MODE = true;
 
 // Candle
 const uint8_t CANDLE_HUE = 20;
@@ -34,6 +35,7 @@ unsigned long motionLastDetectedTime;
 int state;
 bool policePhase = false;
 bool lastMotionState = false;
+int nextTrack = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -52,7 +54,13 @@ void loop() {
     if (currentMotion && !lastMotionState) {
       motionLastDetectedTime = millis();
       Serial.println("Motion detected");
-      int track = random(TRACK_COUNT);
+      int track;
+      if (SEQUENTIAL_MODE) {
+        track = nextTrack;
+        nextTrack = (nextTrack + 1) % TRACK_COUNT;
+      } else {
+        track = random(TRACK_COUNT);
+      }
       motionDelayTime = TRACK_DURATIONS[track];
       clearLEDs();
       mp3.playFileByIndexNumber(track + 1);
@@ -62,7 +70,15 @@ void loop() {
   } else if (state == 1) {
     loopDisco();
   } else if (state == 2) {
+    loopLaugh();
+  } else if (state == 3) {
     loopPolice();
+  } else if (state == 4) {
+    loopOrgan();
+  } else if (state == 7) {
+    loopMachineGun();
+  } else {
+    loopLaugh();
   }
 
   if (state != 0) {
@@ -110,6 +126,44 @@ void loopPolice() {
   policePhase = !policePhase;
   FastLED.show();
   delay(150);
+}
+
+void loopMachineGun() {
+  unsigned long elapsed = millis() - motionLastDetectedTime;
+
+  bool inWindow = (elapsed < 2000) ||
+                  (elapsed >= 4000  && elapsed < 5000) ||
+                  (elapsed >= 6500  && elapsed < 8000) ||
+                  (elapsed >= 9250  && elapsed < 10000) ||
+                  (elapsed >= 11250 && elapsed < 12250);
+
+  if (inWindow) {
+    leds[0] = CRGB::White;
+    leds[1] = CRGB::White;
+    FastLED.show();
+    delay(40);
+    clearLEDs();
+    delay(40);
+  } else {
+    clearLEDs();
+    delay(20);
+  }
+}
+
+void loopLaugh() {
+  leds[0] = CRGB::White;
+  leds[1] = CRGB::White;
+  FastLED.show();
+  delay(80);
+  clearLEDs();
+  delay(80);
+}
+
+void loopOrgan() {
+  leds[0] = CRGB::Blue;
+  leds[1] = CRGB::Blue;
+  FastLED.show();
+  delay(20);
 }
 
 void loopDisco() {
