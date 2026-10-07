@@ -11,8 +11,11 @@ CRGB leds[NUM_LEDS];
 // Audio
 SoftwareSerial mySoftwareSerial(2, 3);
 JQ6500_Serial mp3(mySoftwareSerial);
-const unsigned long TRACK_DURATIONS[] = {15000, 10000, 30000, 20000, 8000, 24000, 13000};
-const int TRACK_COUNT = 7;
+// Order matches sounds/pumpkin_files: 001_disco, 002_crazy_clown_laugh,
+// 003_music_box, 004_organ, 005_cat, 006_machine_gun, 007_electricty,
+// 008_beast, 009_space_weasel, 010_ufo, 011_wolf, 012_firetruck
+const unsigned long TRACK_DURATIONS[] = {15000, 10000, 30000, 20000, 8000, 13000, 8000, 24000, 8000, 14000, 10000, 30000};
+const int TRACK_COUNT = 12;
 const bool SEQUENTIAL_MODE = true;
 
 // Candle
@@ -72,11 +75,21 @@ void loop() {
   } else if (state == 2) {
     loopLaugh();
   } else if (state == 3) {
+    loopMusicBox();
+  } else if (state == 12) {
     loopPolice();
   } else if (state == 4) {
     loopOrgan();
-  } else if (state == 7) {
+  } else if (state == 6) {
     loopMachineGun();
+  } else if (state == 7) {
+    loopElectricity();
+  } else if (state == 8) {
+    loopGreen();
+  } else if (state == 9) {
+    loopSpace();
+  } else if (state == 11) {
+    loopBlood();
   } else {
     loopLaugh();
   }
@@ -160,6 +173,75 @@ void loopLaugh() {
 void loopOrgan() {
   leds[0] = CRGB::Blue;
   leds[1] = CRGB::Blue;
+  FastLED.show();
+  delay(20);
+}
+
+void loopMusicBox() {
+  unsigned long elapsed = millis() - motionLastDetectedTime;
+  int colorIndex = (elapsed / 500) % 4;
+  CRGB color;
+  switch (colorIndex) {
+    case 0: color = CRGB::Red; break;
+    case 1: color = CRGB::Blue; break;
+    case 2: color = CRGB::Yellow; break;
+    default: color = CRGB::Green; break;
+  }
+  leds[0] = color;
+  leds[1] = color;
+  FastLED.show();
+  delay(20);
+}
+
+void loopElectricity() {
+  const unsigned long BLINK_SLOT = 60;    // one on/off slot, ms
+  const int BLINK_COUNT = 3;              // rapid purple blinks
+  const unsigned long BLINK_PHASE = BLINK_SLOT * BLINK_COUNT * 2;
+  const unsigned long WHITE_PHASE = 500;  // solid white, ms
+  const unsigned long CYCLE = BLINK_PHASE + WHITE_PHASE;
+
+  unsigned long elapsed = millis() - motionLastDetectedTime;
+  unsigned long t = elapsed % CYCLE;
+
+  if (t < BLINK_PHASE) {
+    int slot = t / BLINK_SLOT;
+    bool on = (slot % 2 == 0);
+    if (on) {
+      leds[0] = CRGB::Purple;
+      leds[1] = CRGB::Purple;
+      FastLED.show();
+    } else {
+      clearLEDs();
+    }
+  } else {
+    leds[0] = CRGB::White;
+    leds[1] = CRGB::White;
+    FastLED.show();
+  }
+  delay(20);
+}
+
+void loopSpace() {
+  CRGB color = policePhase ? CRGB::Purple : CRGB::Yellow;
+  leds[0] = color;
+  leds[1] = color;
+  policePhase = !policePhase;
+  FastLED.show();
+  delay(150);
+  clearLEDs();
+  delay(50);
+}
+
+void loopGreen() {
+  leds[0] = CRGB::Green;
+  leds[1] = CRGB::Green;
+  FastLED.show();
+  delay(20);
+}
+
+void loopBlood() {
+  leds[0] = CRGB::Red;
+  leds[1] = CRGB::Red;
   FastLED.show();
   delay(20);
 }
