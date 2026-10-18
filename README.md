@@ -51,7 +51,8 @@ amplifier output and can damage the sound module.
 - `pumpkin/pumpkin.ino` - the Arduino sketch. It has to stay inside a folder
   with the same name (an Arduino IDE rule).
 - `sounds/` - the final mp3s, numbered in play order (`001_...`, `002_...`)
-- `scripts/copy-sounds-in-order.ps1` - copies the mp3s onto the sound card
+- `scripts/copy-sounds-in-order.ps1` - copies the mp3s onto the sound card and
+  warns if their count doesn't match the sketch
 - `sounds_source/` - original raw recordings. Git-ignored (too large), so it
   only exists on the machine that made the sounds.
 
@@ -92,6 +93,10 @@ Plug the sound card in over USB, then from the repo root:
 Replace `D:` with the sound card's drive letter. The script deletes the old
 mp3/wav files and copies `sounds/*` in filename order. Eject the drive from
 File Explorer before unplugging.
+
+It also reads `pumpkin/pumpkin.ino` and prints a warning if the number of sound
+files doesn't match the number of `TRACK_DURATIONS` entries (or a hardcoded
+`TRACK_COUNT`). The copy still goes ahead, so fix the sketch and re-upload it.
 
 ```powershell
 # if script execution is blocked

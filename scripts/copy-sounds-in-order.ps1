@@ -15,8 +15,13 @@
 
 .PARAMETER Source
     Folder containing the source sound files. Defaults to ..\sounds relative
-    to this script (the sketch's own sounds folder), so it works unchanged in
-    any copy of the sketch folder.
+    to this script.
+
+.PARAMETER Sketch
+    Arduino sketch to check the sound count against. Defaults to
+    ..\pumpkin\pumpkin.ino relative to this script. If the number of sound
+    files doesn't match the number of TRACK_DURATIONS entries (or a literal
+    TRACK_COUNT) in the sketch, a warning is shown. Copying still proceeds.
 
 .PARAMETER Destination
     Folder/drive to copy files to, e.g. the SD card mounted as E:\
@@ -37,6 +42,8 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [string]$Source = (Join-Path $PSScriptRoot "..\sounds"),
+
+    [string]$Sketch = (Join-Path $PSScriptRoot "..\pumpkin\pumpkin.ino"),
 
     [Parameter(Mandatory = $true)]
     [string]$Destination,
@@ -73,6 +80,46 @@ if ($files.Count -eq 0) {
 Write-Host "Files to copy (in playback order):"
 $files | ForEach-Object { Write-Host "  $($_.Name)" }
 
+# Warn if the sketch's track list doesn't match the number of sound files.
+# Returns a list of warning messages (empty if everything matches).
+function Get-SketchSyncWarnings {
+    param([string]$SketchPath, [int]$SoundCount)
+
+    if (-not (Test-Path $SketchPath)) {
+        return @("Sketch not found at '$SketchPath', so the sound count was not checked against it.")
+    }
+
+    # Strip comments so commented-out values or notes don't confuse the match.
+    $code = (Get-Content -Raw -Path $SketchPath) -replace '(?s)/\*.*?\*/', '' -replace '//[^\r\n]*', ''
+    $name = Split-Path $SketchPath -Leaf
+    $warnings = @()
+
+    $m = [regex]::Match($code, 'TRACK_DURATIONS\s*\[\s*\]\s*=\s*\{([^}]*)\}')
+    if ($m.Success) {
+        $entries = @($m.Groups[1].Value -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+        if ($entries.Count -ne $SoundCount) {
+            $warnings += "$SoundCount sound file(s) but $name lists $($entries.Count) TRACK_DURATIONS entries. Update TRACK_DURATIONS (and the state checks in loop()) to match."
+        }
+    } else {
+        $warnings += "Could not find a TRACK_DURATIONS array in $name, so the sound count was not checked."
+    }
+
+    # TRACK_COUNT is normally derived from the array; only check it if hardcoded.
+    $c = [regex]::Match($code, 'TRACK_COUNT\s*=\s*(\d+)\s*;')
+    if ($c.Success -and [int]$c.Groups[1].Value -ne $SoundCount) {
+        $warnings += "$SoundCount sound file(s) but $name sets TRACK_COUNT = $($c.Groups[1].Value)."
+    }
+
+    return $warnings
+}
+
+$syncWarnings = @(Get-SketchSyncWarnings -SketchPath $Sketch -SoundCount $files.Count)
+if ($syncWarnings.Count -eq 0) {
+    Write-Host "Sketch check: $($files.Count) sound file(s) match $(Split-Path $Sketch -Leaf)."
+} else {
+    $syncWarnings | ForEach-Object { Write-Warning $_ }
+}
+
 if (-not $NoClear) {
     $existing = Get-ChildItem -Path $Destination -File |
         Where-Object { $_.Extension -match '\.(mp3|wav)$' }
@@ -92,3 +139,6 @@ foreach ($f in $files) {
 }
 
 Write-Host "Done. Copied $($files.Count) file(s) to '$Destination' in order."
+if ($syncWarnings.Count -gt 0) {
+    Write-Warning "The sketch check reported warnings (see above). Fix them and re-upload the sketch if needed."
+}
