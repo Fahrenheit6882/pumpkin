@@ -33,7 +33,8 @@ here:
 
 - `pumpkin/pumpkin.ino` - the Arduino sketch. It has to stay inside a folder
   with the same name (an Arduino IDE rule).
-- `sounds/` - the final mp3s, numbered in play order (`001_...`, `002_...`)
+- `sounds/` - the final mp3s, numbered in play order (`001_...`, `002_...`).
+  Sources and licenses are in [`CREDITS.md`](CREDITS.md).
 - `scripts/copy-sounds-in-order.ps1` - copies the mp3s onto the sound card and
   warns if their count doesn't match the sketch
 - `sounds_source/` - original raw recordings. Git-ignored (too large), so it
