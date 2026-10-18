@@ -14,7 +14,9 @@
     write order and mess up playback order.
 
 .PARAMETER Source
-    Folder containing the source sound files. Defaults to .\sounds\pumpkin_files
+    Folder containing the source sound files. Defaults to ..\sounds relative
+    to this script (the sketch's own sounds folder), so it works unchanged in
+    any copy of the sketch folder.
 
 .PARAMETER Destination
     Folder/drive to copy files to, e.g. the SD card mounted as E:\
@@ -29,12 +31,12 @@
     .\copy-sounds-in-order.ps1 -Destination E:\
 
 .EXAMPLE
-    .\copy-sounds-in-order.ps1 -Source .\sounds\pumpkin_min_files -Destination E:\ -WhatIf
+    .\copy-sounds-in-order.ps1 -Destination E:\ -WhatIf
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [string]$Source = (Join-Path $PSScriptRoot "..\sounds\pumpkin_files"),
+    [string]$Source = (Join-Path $PSScriptRoot "..\sounds"),
 
     [Parameter(Mandatory = $true)]
     [string]$Destination,
