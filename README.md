@@ -23,28 +23,11 @@ Tracks play in order (`SEQUENTIAL_MODE`) and wrap around after the last one.
 
 ## Hardware
 
-| Part | Notes |
-| --- | --- |
-| Arduino Nano | CH340 USB chip on most clones |
-| JQ6500 MP3 module (or HW-896 V2.0.2 clone) | plays mp3s stored in its onboard flash |
-| 8 ohm small speaker | |
-| HC-SR501 PIR motion sensor | needs 10-60 s to warm up after power-on |
-| 2-3 WS2812B LEDs | cut from a strip; the sketch drives the first two |
-| 4x AA battery box + SPST rocker switch | ~100-160 mA, roughly 15-20+ h on alkalines |
+The parts list, wiring and pin connections are documented on the website, not
+here:
 
-Pins used by `pumpkin.ino`:
-
-| Function | Arduino pin |
-| --- | --- |
-| WS2812B data | D6 |
-| PIR signal | D5 |
-| Sound card TX | D2 (SoftwareSerial RX) |
-| Sound card RX | D3 through a 1 kOhm resistor (SoftwareSerial TX) |
-| Power to LEDs, PIR, sound card | 5V and GND |
-| Battery pack | VIN and GND |
-
-Never let the speaker wires touch each other, GND or VCC; that shorts the
-amplifier output and can damage the sound module.
+- [Overview](https://fahrenheitrobotics.org/site/docs/projects/pumpkinator/overview) - parts list and how it works
+- [Assembly steps](https://fahrenheitrobotics.org/site/docs/projects/pumpkinator/assembly-steps) - wiring and pins
 
 ## Repo layout
 
