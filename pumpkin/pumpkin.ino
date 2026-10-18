@@ -11,11 +11,12 @@ CRGB leds[NUM_LEDS];
 // Audio
 SoftwareSerial mySoftwareSerial(2, 3);
 JQ6500_Serial mp3(mySoftwareSerial);
-// Order matches sounds/pumpkin_files: 001_disco, 002_crazy_clown_laugh,
-// 003_music_box, 004_organ, 005_cat, 006_machine_gun, 007_electricty,
-// 008_beast, 009_space_weasel, 010_ufo, 011_wolf, 012_firetruck
-const unsigned long TRACK_DURATIONS[] = {15000, 10000, 30000, 20000, 8000, 13000, 8000, 24000, 8000, 14000, 10000, 30000};
-const int TRACK_COUNT = 12;
+// Order matches the mp3s in sounds/ (see scripts/copy-sounds-in-order.ps1):
+// 001_disco, 002_crazy_clown_laugh,
+// 003_music_box, 004_organ, 005_cat, 006_electricty, 007_beast,
+// 008_space_weasel, 009_ufo, 010_wolf
+const unsigned long TRACK_DURATIONS[] = {15000, 10000, 30000, 20000, 8000, 8000, 24000, 8000, 14000, 10000};
+const int TRACK_COUNT = sizeof(TRACK_DURATIONS) / sizeof(TRACK_DURATIONS[0]);
 const bool SEQUENTIAL_MODE = true;
 
 // Candle
@@ -76,19 +77,15 @@ void loop() {
     loopLaugh();
   } else if (state == 3) {
     loopMusicBox();
-  } else if (state == 12) {
-    loopPolice();
   } else if (state == 4) {
     loopOrgan();
   } else if (state == 6) {
-    loopMachineGun();
-  } else if (state == 7) {
     loopElectricity();
-  } else if (state == 8) {
+  } else if (state == 7) {
     loopGreen();
-  } else if (state == 9) {
+  } else if (state == 8) {
     loopSpace();
-  } else if (state == 11) {
+  } else if (state == 10) {
     loopBlood();
   } else {
     loopLaugh();
